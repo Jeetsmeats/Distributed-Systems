@@ -1,38 +1,56 @@
 // imports
 import java.util.ArrayList;
 import java.util.regex.*;
+import Assignment_1.Helper.CheckData;
 import Assignment_1.Exceptions.InvalidDescription;
+import Assignment_1.Exceptions.DescriptionNullException;
 
 /**
  * Unique word descriptors.
  */
 private class WordDescription {
 
+    /* Associated word to descriptions. */
     private String word;
 
-    /* Word description */
-    private ArrayList<String> wordDescription;
+    /* Word descriptions */
+    private ArrayList<String> WordDescription;
 
-    /* Regular expression for only digits */
-    private static String regex = "[0-9]+"
-
-    public WordDescription(String word) {
-
+    public WordDescription(String word, String description) {
+`
         this.word = word;
-        this.wordDescription = new ArrayList<String>();
+
+        // description validity check
+        checkDescription(description);
+
+        this.WordDescription = new ArrayList<String>();
+        this.WordDescription.add(description);          // add the description to word
     }
 
-    public WordDescription(String word, ArrayList<String> descriptions) {
+    /**
+     * @return Associated word.
+     */
+    public String getWord() {
 
-        this.word = word;
-        this.wordDescription = descriptions;
+        return this.word
     }
+
     /**
      * @return list of word descriptions.
      */
     public ArrayList<String> getWordDescription() {
 
-        return this.wordDescription;
+        return this.WordDescription;
+    }
+
+    /**
+     * Get a description of a given word.
+     * @param descriptionNum
+     * @return
+     */
+    public String getDescription(int descriptionNum) {
+
+        return this.WordDescription.get(descriptionNum);
     }
 
     /**
@@ -41,16 +59,13 @@ private class WordDescription {
      */
     public void addDescription(String description) {
 
-        if (onlyDigits(description)) {          /* Description is only numbers exception */
+        // check description validity
+        checkDescription(description);
 
-            throw new InvalidDescription("Description cannot be only numbers.");
-        } else if (this.wordDescription.contains(description)) {        /* Description already exists */
-
-            throw new InvalidDescription("Description already exists in dictionary.");
-        }
-
+        // check if the description already exists
+        if (checkDescriptionExists(description)) throw new InvalidDescription("Description already exists, give a new description.");
         // add description
-        this.wordDescription.add(description);
+        this.WordDescription.add(description);
     }
 
     /**
@@ -60,44 +75,38 @@ private class WordDescription {
      */
     public void updateDescription(String newDescription, int descriptionNum) {
 
-        if (onlyDigits(description)) {          /* Description is only numbers exception */
+        // check the description
+        checkDescription(newDescription);
 
-            throw new InvalidDescription("Description cannot be only numbers.");
-        } else if (descriptionNum.equals(this.wordDescription.get(descriptionNum))) {
-
-            throw new InvalidDescription("Description is the same.  Update the description to something new.")
-        }
+        // check if description does not exist
+        if (!getDescription(descriptionNum).equals(newDescription) || !checkDescriptionExists(newDescription)) throw new DescriptionNullException("Description does not exist.");
 
         // update description
-        this.wordDescription.set(descriptionNum, newDescription);
+        this.WordDescription.set(descriptionNum, newDescription);
     }
 
     /**
-     * Check if a string has only digits.
-     * Code retrieved from:
-     * Author: GeeksforGeeks
-     * Date: 26/11/2022
-     * URL: https://www.geeksforgeeks.org/how-to-check-if-string-contains-only-digits-in-java/
-     * @param str check for only digits in input string
-     * @return only
+     * Check if the description is valid.
+     * @param description
      */
-    private static boolean onlyDigits(String str)
-    {
-        // Regex to check if string constains only digits
-        String regex = "[0-9]+";
+    private static void checkDescription(String description, int descriptionNum) {
 
-        // Compile the regex
-        Pattern p = Pattern.compile(regex);
+        if (CheckData.onlyDigits(description)) {          /* Description is only numbers exception */
 
-        if (str == null) {      /* Check empty string */
+            throw new InvalidDescription("Description cannot be only numbers.");
+        } else if (newDescription.length > 1000) {
 
-            return false;
+            throw new InvalidDescription("The description is too long.  Keep the description less than 1000 characters.");
+        }
+    }
+
+    private boolean checkDescriptionExists(String description) {
+
+        for (String desc: this.WordDescription) {
+
+            if (desc.equals(description)) return true;
         }
 
-        // Compare regex to string
-        Matcher m = p.matcher(str);
-
-        // check regex matching
-        return m.matches();
+        return false;
     }
 }

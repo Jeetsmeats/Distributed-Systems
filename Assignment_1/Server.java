@@ -23,6 +23,11 @@ public class Server {
 
         try {
 
+            System.out.println("Awaiting socket connection...);
+
+            while (True) {
+
+            }
         } catch (SocketException e) {
 
 
