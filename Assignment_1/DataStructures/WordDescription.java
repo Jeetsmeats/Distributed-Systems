@@ -16,7 +16,7 @@ public class WordDescription {
     private String word;
 
     /* Word descriptions */
-    private ArrayList<String> WordDescription;
+    private ArrayList<String> descriptionList;
 
     public WordDescription(String word, String description) {
 
@@ -31,16 +31,17 @@ public class WordDescription {
             e.printStackTrace();
         }
 
-        this.WordDescription = new ArrayList<String>();
-        this.WordDescription.add(description);          // add the description to word
+        this.descriptionList = new ArrayList<String>();
+        this.descriptionList.add(description);          // add the description to word
     }
 
     /**
-     * @return Associated word.
+     * Word getter
+     * @return
      */
     public String getWord() {
 
-        return this.word;
+        return word;
     }
 
     /**
@@ -48,23 +49,13 @@ public class WordDescription {
      */
     public ArrayList<String> getWordDescription() {
 
-        return this.WordDescription;
-    }
-
-    /**
-     * Get a description of a given word.
-     * @param descriptionNum
-     * @return
-     */
-    public String getDescription(int descriptionNum) {
-
-        return this.WordDescription.get(descriptionNum);
+        return this.descriptionList;
     }
 
     /**
      * Add description to word in dictionary
      * @param description word description
-     * @throws Exceptions.InvalidWordException
+     * @throws InvalidDescription entered description already exists
      */
     public void addDescription(String description) throws InvalidDescription {
 
@@ -78,18 +69,17 @@ public class WordDescription {
         }
 
         // check if the description already exists
-        if (checkDescriptionExists(description)) throw new InvalidDescription("Description already exists, give a new description.");
+        if (checkDescriptionExists(description) >= 0) throw new InvalidDescription("Description already exists, give a new description.");
         // add description
-        this.WordDescription.add(description);
+        this.descriptionList.add(description);
     }
 
     /**
      * Update the word description
      * @param newDescription updated description for word.
-     * @param descriptionNum description number in the list.
      * @throws DescriptionNullException
      */
-    public void updateDescription(String newDescription, int descriptionNum) throws DescriptionNullException {
+    public void updateDescription(String newDescription) throws DescriptionNullException {
 
         // check the description
         // description validity check
@@ -97,11 +87,13 @@ public class WordDescription {
 
             checkDescription(newDescription);
 
-            // check if description does not exist
-            if (!getDescription(descriptionNum).equals(newDescription) || !checkDescriptionExists(newDescription)) throw new DescriptionNullException("Description does not exist.");
+            // get the description index in array
+            int descIdx = checkDescriptionExists(newDescription);
+
+            if (descIdx == -1) throw new DescriptionNullException("Description does not exist.");
 
             // update description
-            this.WordDescription.set(descriptionNum, newDescription);
+            this.descriptionList.set(descIdx, newDescription);
         } catch (InvalidDescription e) {
 
             e.printStackTrace();
@@ -125,13 +117,20 @@ public class WordDescription {
         }
     }
 
-    private boolean checkDescriptionExists(String description) {
+    /**
+     * Check if description exist for the word.
+     * @param description description to check
+     * @return description pointer.
+     */
+    private int checkDescriptionExists(String description) {
 
-        for (String desc: this.WordDescription) {
+        int i = 0;
+        for (String desc: this.descriptionList) {
 
-            if (desc.equals(description)) return true;
+            if (desc.equals(description)) return i;
+            i++;
         }
 
-        return false;
+        return -1;
     }
 }

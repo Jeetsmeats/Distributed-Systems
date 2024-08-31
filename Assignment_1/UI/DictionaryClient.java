@@ -86,7 +86,7 @@ public class DictionaryClient extends JFrame {
 
         try {
 
-            setUpClient(args);
+            setUpClient2Server(args);
         }
         catch (UnknownHostException e)
         {
@@ -112,12 +112,12 @@ public class DictionaryClient extends JFrame {
     }
 
     /**
-     * Set up the client - server connection
-     * @param args
-     * @throws UnknownHostException
-     * @throws IOException
+     * Set up the client - server connection.
+     * @param args initial arguments for server setup.
+     * @throws UnknownHostException undetermined host ip.
+     * @throws IOException failed IO stream set up.
      */
-    public static void setUpClient(String[] args) throws UnknownHostException, IOException {
+    public static void setUpClient2Server(String[] args) throws UnknownHostException, IOException {
 
         port = Integer.parseInt(args[1]);
         address = args[0];
@@ -126,8 +126,10 @@ public class DictionaryClient extends JFrame {
         socket = new Socket(address, port);
         System.out.println("Connection established");
 
-        // Get the input/output streams for reading/writing data from/to the socket
+        // Set the IO stream for client - server communication.
         in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
         out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
     }
+
+//    public static void sendTask()
 }

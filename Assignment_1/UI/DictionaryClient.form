@@ -15,7 +15,7 @@
           </grid>
         </constraints>
         <properties>
-          <text value="Server Port..."/>
+          <text value="DictionaryServer Port..."/>
         </properties>
       </component>
       <component id="28a13" class="javax.swing.JButton" binding="connectBtn">
@@ -59,7 +59,7 @@
           </grid>
         </constraints>
         <properties>
-          <text value="Server Address..."/>
+          <text value="DictionaryServer Address..."/>
         </properties>
       </component>
       <component id="b9d3e" class="javax.swing.JTable" binding="dictionaryTable">
@@ -135,7 +135,7 @@
           <grid row="0" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Server Address:"/>
+          <text value="DictionaryServer Address:"/>
         </properties>
       </component>
       <component id="b4973" class="javax.swing.JLabel" binding="searchMeaningLabel">
@@ -255,7 +255,7 @@
           <grid row="1" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Server Port: "/>
+          <text value="DictionaryServer Port: "/>
         </properties>
       </component>
       <hspacer id="29410">
@@ -268,7 +268,7 @@
           <grid row="0" column="0" row-span="1" col-span="5" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Server Connection:"/>
+          <text value="DictionaryServer Connection:"/>
         </properties>
       </component>
     </children>
