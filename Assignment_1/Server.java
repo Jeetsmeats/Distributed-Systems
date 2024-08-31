@@ -23,7 +23,11 @@ public class Server {
 
         try {
 
-            System.out.println("Awaiting socket connection...);
+            System.out.println("Awaiting socket connection...");
+
+            // Set up IO streams
+            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 
             while (True) {
 

@@ -15,11 +15,12 @@ public class Client {
     {
 
         Socket socket = null;
-        try
-        {
+        try {
+            int port = Integer.parseInt(args[1]);
+            String host = args[0];
+
             // Create a stream socket bounded to any port and connect it to the
-            // socket bound to localhost on port 4444
-            socket = new Socket("localhost", 4444);
+            socket = new Socket(host, port);
             System.out.println("Connection established");
 
             // Get the input/output streams for reading/writing data from/to the socket
@@ -28,44 +29,42 @@ public class Client {
 
             Scanner scanner = new Scanner(System.in);
             String inputStr = null;
-
-            //While the user input differs from "exit"
-            while (!(inputStr = scanner.nextLine()).equalsIgnoreCase("exit"))
-            {
-
-                // Send the input string to the server by writing to the socket output stream
-                out.write(inputStr + "\n");
-                out.flush();
-                System.out.println("Message sent");
-
-                // Receive the reply from the server by reading from the socket input stream
-                String received = in.readLine(); // This method blocks until there  is something to read from the
-                // input stream
-                System.out.println("Message received: " + received);
-            }
-
-            scanner.close();
+//
+//            //While the user input differs from "exit"
+//            while (!(inputStr = scanner.nextLine()).equalsIgnoreCase("exit"))
+//            {
+//
+//                // Send the input string to the server by writing to the socket output stream
+//                out.write(inputStr + "\n");
+//                out.flush();
+//                System.out.println("Message sent");
+//
+//                // Receive the reply from the server by reading from the socket input stream
+//                String received = in.readLine(); // This method blocks until there  is something to read from the
+//                // input stream
+//                System.out.println("Message received: " + received);
+//            }
+//
+//            scanner.close();
 
         }
         catch (UnknownHostException e)
         {
             e.printStackTrace();
-        }
-        catch (IOException e)
+        } catch (IOException e)
         {
             e.printStackTrace();
-        }
-        finally
-        {
+        } catch (NumberFormatException e){
+
+            System.out.println("Incorrect port number.");
+        } finally {
+
             // Close the socket
-            if (socket != null)
-            {
-                try
-                {
+            if (socket != null) {
+                try {
                     socket.close();
                 }
-                catch (IOException e)
-                {
+                catch (IOException e) {
                     e.printStackTrace();
                 }
             }
