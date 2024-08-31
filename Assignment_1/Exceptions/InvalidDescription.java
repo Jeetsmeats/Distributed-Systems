@@ -1,4 +1,4 @@
-package Assignment_1.Exceptions;
+package Exceptions;
 
 /**
  * Invalid word description exception

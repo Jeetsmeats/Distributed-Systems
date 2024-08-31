@@ -1,5 +1,4 @@
-package Assignment_1.Exceptions;
-
+package Exceptions;
 /**
  * Action exception for unsuccessful action.
  */

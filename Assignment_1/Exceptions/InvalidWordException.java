@@ -1,5 +1,4 @@
-package Assignment_1.Exceptions;
-
+package Exceptions;
 /**
  * Invalid word exception for incorrect word inputs.
  */
