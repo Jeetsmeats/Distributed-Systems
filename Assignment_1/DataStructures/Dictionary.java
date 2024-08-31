@@ -24,7 +24,7 @@ public class Dictionary {
     /**
      * Get the list of word meanings.
      * @param word Selected word
-     * @throws Assignment_1.Exceptions.WordNullException
+     * @throws WordNullException word in dictionary error
      * @return Get the list of word description.
      */
     public WordDescription getMeaning(String word) throws WordNullException {
@@ -40,8 +40,8 @@ public class Dictionary {
 
     /**
      * Method to remove word from the dictionary.
-     * @param word - word to remove from dictionary.
-     * @throws Assignment_1.Exceptions.DictionaryActionException
+     * @param word word to remove from dictionary.
+     * @throws DictionaryActionException error in removing word from dictionary
      * @return Status message for remove word.
      */
     public String removeWord(String word) throws DictionaryActionException {
