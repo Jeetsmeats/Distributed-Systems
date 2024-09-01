@@ -113,15 +113,12 @@ public class DictionaryClient extends JFrame {
             // initial request
             request(startAction);
         }
-        catch (UnknownHostException e)
+        catch (UnknownHostException | NumberFormatException e)
         {
-            e.printStackTrace();
+            consoleLog.append(e.getMessage());
         } catch (IOException e)
         {
-            e.printStackTrace();
-        } catch (NumberFormatException e){
-
-            System.out.println("Incorrect port number.");
+            consoleLog.append(e.getMessage());
         } finally {
 
             // Close the socket
@@ -131,7 +128,7 @@ public class DictionaryClient extends JFrame {
                 }
                 catch (IOException e) {
 
-                    e.printStackTrace();
+                    consoleLog.append(e.getMessage());
                 }
             }
         }
@@ -142,6 +139,12 @@ public class DictionaryClient extends JFrame {
         new DictionaryClient(args);
     }
 
+    /**
+     * Client request
+     * @param serverAction server action object
+     * @throws UnknownHostException error connecting to host
+     * @throws IOException input output error
+     */
     public void request(Actions serverAction) throws UnknownHostException, IOException {
 
         // Socket connection to server
@@ -183,6 +186,7 @@ public class DictionaryClient extends JFrame {
             case ADD_WORD:
                 packet.put("method", "add word");
                 packet.put("word", serverAction.getWord());
+                packet.put("description", serverAction.getMeaning());
                 break;
             default:
                 break;
@@ -216,14 +220,8 @@ public class DictionaryClient extends JFrame {
             consoleLog.append(err.toString() + "\n");
         } catch (JSONException e) {
 
-            JSONArray wordList;
-            JSONArray meaningList;
-            JSONObject wordJson;
-            String word;
-            String[] words;
-            String[] meanings;
-
             System.out.println("No error");
+
             // package message into json based message protocol
             switch (action) {
 
@@ -314,7 +312,7 @@ public class DictionaryClient extends JFrame {
      */
     private void wordActions(JSONObject response) {
 
-        JSONArray wordList = (JSONArray) response.get("words");
+        JSONArray wordList = (JSONArray) response.get("word");
         String[] words = jsonArrayToString(wordList);
 
         // display words on GUI

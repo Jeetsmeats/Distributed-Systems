@@ -51,6 +51,9 @@ public class Dictionary implements Serializable {
         } catch (InvalidDescription e) {
 
             e.printStackTrace();
+        } catch (InvalidWordException e) {
+
+            e.printStackTrace();
         }
 
         // save data
@@ -109,26 +112,19 @@ public class Dictionary implements Serializable {
             e.printStackTrace();
         }
     }
+
     /**
      * Method to remove word from the dictionary.
      * @param word word to remove from dictionary.
      * @throws DictionaryActionException error in removing word from dictionary
+     * @throws InvalidWordException error in input word.
+     * @throws WordNullException error due to word nullity.
      * @return Status message for remove word.
      */
-    public String removeWord(String word) throws DictionaryActionException {
+    public String removeWord(String word) throws DictionaryActionException, InvalidWordException, WordNullException {
 
-        // check word validity
-        try {
-
-            checkWordExists(word);
-            checkWordIsValid(word);
-        } catch (WordNullException e) {
-
-            e.printStackTrace();
-        } catch (InvalidWordException e) {
-
-            e.printStackTrace();
-        }
+        checkWordExists(word);
+        checkWordIsValid(word);
 
         if (this.WordDictionary.remove(word) != null) {             /* Remove word from dictionary */
 
@@ -143,17 +139,12 @@ public class Dictionary implements Serializable {
      * Add word to the dictionary.
      * @param word word to add to the dictionary.
      * @param description description to add with word.
+     * @throws InvalidWordException error in input word..
      */
-    public void addWord(String word, String description) {
+    public void addWord(String word, String description) throws InvalidWordException {
 
         // check word validity
-        try {
-
-            checkWordIsValid(word);
-        } catch (InvalidWordException e) {
-
-            e.printStackTrace();
-        }
+        checkWordIsValid(word);
 
         ArrayList<String> descriptions = new ArrayList<String>();
         descriptions.add(description);
@@ -162,19 +153,12 @@ public class Dictionary implements Serializable {
     }
 
     /**
-     * @return list of word descriptions.
-     */
-    public ArrayList<String> getWordDescription(String word) {
-
-        return this.WordDictionary.get(word);
-    }
-
-    /**
      * Add description to word in dictionary
      * @param description word description
      * @throws InvalidDescription entered description already exists
+     * @return list of descriptions
      */
-    public void addDescription(String word, String description) throws InvalidDescription {
+    public ArrayList<String> addDescription(String word, String description) throws InvalidDescription {
 
         try {
 
@@ -187,34 +171,36 @@ public class Dictionary implements Serializable {
 
         // check if the description already exists
         if (checkDescriptionExists(description, word) >= 0) throw new InvalidDescription("Description already exists, give a new description.");
+
         // add description
         this.WordDictionary.get(word).add(description);
+
+        return this.WordDictionary.get(word);
     }
 
     /**
-     * Update the word description
+     * Update the word description.
      * @param newDescription updated description for word.
-     * @throws DescriptionNullException
+     * @param prevDescription previous description for word.
+     * @param word the word corresponding to updated description.
+     * @throws DescriptionNullException description existence nullity.
+     * @throws InvalidDescription error in input description.
+     * @return list of descriptions
      */
-    public void updateDescription(String newDescription, String word) throws DescriptionNullException {
+    public ArrayList<String> updateDescription(String newDescription, String prevDescription, String word) throws DescriptionNullException, InvalidDescription {
 
-        // check the description
         // description validity check
-        try {
+        checkDescription(newDescription);
 
-            checkDescription(newDescription);
+        // get the description index in array
+        int descIdx = checkDescriptionExists(prevDescription, word);
 
-            // get the description index in array
-            int descIdx = checkDescriptionExists(newDescription, word);
+        if (descIdx == -1) throw new DescriptionNullException("Description does not exist.");
 
-            if (descIdx == -1) throw new DescriptionNullException("Description does not exist.");
+        // update description
+        this.WordDictionary.get(word).set(descIdx, newDescription);
 
-            // update description
-            this.WordDictionary.get(word).set(descIdx, newDescription);
-        } catch (InvalidDescription e) {
-
-            e.printStackTrace();
-        }
+        return this.WordDictionary.get(word);
     }
 
     /**

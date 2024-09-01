@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import javax.net.ServerSocketFactory;
 
+import Exceptions.*;
 import Helper.ActionType;
 import org.json.*;
 import java.lang.Object.*;
@@ -80,7 +81,7 @@ public class DictionaryServer {
             String clientIn = in.readLine();
             JSONObject req = new JSONObject(clientIn);              // Client request
 
-            response(req, out, in);
+            response(req, out);
         } catch (IOException e) {
 
             e.printStackTrace();
@@ -91,180 +92,135 @@ public class DictionaryServer {
      * Server response to client request.
      * @param req client request.
      * @param outputStream output data stream from socket.
-     * @return dictionary data response
      */
-    private static void response(JSONObject req, BufferedWriter outputStream, BufferedReader inputStream) throws IOException {
+    private synchronized static void response(JSONObject req, BufferedWriter outputStream) throws IOException {
 
-        JSONObject methodJson = (JSONObject) req.get("method");
-        String method = methodJson.toString();
+        // JSON packet for sending through TCP buffer
+        JSONObject packet = new JSONObject();
+        try {
+            JSONObject methodJson = (JSONObject) req.get("method");
+            String method = methodJson.toString();
 
-        JSONObject word;
-        JSONObject meaning;
-        switch (method) {
+            JSONObject wordJson;
+            JSONObject meaningJson;
+            JSONArray meaningsArray;
+            JSONArray wordArray;
 
-            case "get dictionary":
-                ArrayList<String> words = dictionary.getWords();
+            String word;
+            String meaning;
+            ArrayList<String> meanings;
+            ArrayList<String> words;
 
-                break;
-            case "get meaning":
-                break;
-            case "add meaning":
-                break;
-            case "update meaning":
-                break;
-            case "remove word":
-                break;
-            case "add word":
-                break;
+            switch (method) {
+
+                case "get dictionary":
+
+                    words = dictionary.getWords();
+                    wordArray = addList2JSONArray(words);
+                    packet.put("words", wordArray);
+                    break;
+                case "get meaning":
+
+                    wordJson = (JSONObject) req.get("word");
+                    word = wordJson.toString();
+
+                    meanings = dictionary.getMeaning(word);
+                    meaningsArray = addList2JSONArray(meanings);
+
+                    packet.put("meaning", meaningsArray);
+                    packet.put("word", word);
+                    break;
+                case "add meaning":
+
+                    wordJson = (JSONObject) req.get("word");
+                    word = wordJson.toString();
+
+                    meaningJson = (JSONObject) req.get("meaning");
+                    meaning = meaningJson.toString();
+
+                    meanings = dictionary.addDescription(word, meaning);
+                    meaningsArray = addList2JSONArray(meanings);
+
+                    packet.put("meaning", meaningsArray);
+                    packet.put("word", word);
+                    break;
+                case "update meaning":
+
+                    wordJson = (JSONObject) req.get("word");
+                    word = wordJson.toString();
+
+                    meaningJson = (JSONObject) req.get("meaning");
+                    meaning = meaningJson.toString();
+
+                    JSONObject prevMeaningJson = (JSONObject) req.get("previous meaning");
+                    String prevMeaning = prevMeaningJson.toString();
+
+                    meanings = dictionary.updateDescription(meaning, prevMeaning, word);
+                    meaningsArray = addList2JSONArray(meanings);
+
+                    packet.put("meaning", meaningsArray);
+                    packet.put("word", word);
+                    break;
+                case "remove word":
+
+                    wordJson = (JSONObject) req.get("word");
+                    word = wordJson.toString();
+
+                    dictionary.removeWord(word);
+
+                    words = dictionary.getWords();
+                    wordArray = addList2JSONArray(words);
+                    packet.put("word", wordArray);
+                    break;
+                case "add word":
+
+                    wordJson = (JSONObject) req.get("word");
+                    word = wordJson.toString();
+
+                    meaningJson = (JSONObject) req.get("meaning");
+                    meaning = meaningJson.toString();
+
+                    dictionary.addWord(word, meaning);
+
+                    words = dictionary.getWords();
+                    wordArray = addList2JSONArray(words);
+                    packet.put("word", wordArray);
+                    break;
+                default:
+                    break;
+            }
+
+            // send data to client
+            outputStream.write(packet.toString());
+            outputStream.newLine();
+            outputStream.flush();                     // Flush buffered writer contents.
+
+        } catch (WordNullException | InvalidDescription |
+                 InvalidWordException | DescriptionNullException |
+                DictionaryActionException e) {
+
+            // add error to json
+            packet.put("error", e.getMessage());
+
+            // send data to client
+            outputStream.write(packet.toString());
+            outputStream.newLine();
+            outputStream.flush();                     // Flush buffered writer contents.
         }
+    }
 
-        outputStream.write(packet.toString());
-        outputStream.newLine();
-        outputStream.flush();                     // Flush buffered writer contents.
+    /**
+     * Convert a String ArrayList to a JSON array.
+     * @param list String ArrayList of values.
+     * @return Formatted JSONArray.
+     */
+    private static JSONArray addList2JSONArray(ArrayList<String> list) {
 
-//        // package message into json based message protocol
-//        JSONObject packet = new JSONObject();
-//        ActionType action = serverAction.getActionType();
-//        switch (action) {
-//
-//            case GET_DICTIONARY:
-//                packet.put("method", "get dictionary");
-//                break;
-//            case GET_MEANING:
-//                packet.put("method", "get meaning");
-//                packet.put("word", serverAction.getWord());
-//                break;
-//            case ADD_MEANING:
-//                packet.put("method", "add meaning");
-//                packet.put("word", serverAction.getWord());
-//                packet.put("meaning", serverAction.getMeaning());
-//                break;
-//            case UPDATE_MEANING:
-//                packet.put("method", "update meaning");
-//                packet.put("word", serverAction.getWord());
-//                packet.put("meaning", serverAction.getMeaning());
-//                packet.put("previous meaning", serverAction.getPrevMeaning());
-//                break;
-//            case REMOVE_WORD:
-//                packet.put("method", "remove word");
-//                packet.put("word", serverAction.getWord());
-//                break;
-//            case ADD_WORD:
-//                packet.put("method", "add word");
-//                packet.put("word", serverAction.getWord());
-//                break;
-//            default:
-//                break;
-//        }
-//        out.write(packet.toString());
-//        out.newLine();
-//        out.flush();                     // Flush buffered writer contents.
-//
-//        // await server response
-//        boolean successRes = false;
-//        String res = null;
-//
-//        while(!successRes) {
-//
-//            if (in.ready()) {           /* Response received */
-//                res = in.readLine();
-//                System.out.println(res);
-//                successRes = true;
-//            }
-//        }
-//
-//        // Close resources
-//        in.close();
-//        out.close();
-//
-//        JSONObject response = new JSONObject(res);
-//        // check for errors
-//        try {
-//
-//            JSONObject err = (JSONObject) response.get("error");
-//            consoleLog.append(err.toString() + "\n");
-//        } catch (JSONException e) {
-//
-//            JSONArray wordList;
-//            JSONArray meaningList;
-//            JSONObject wordJson;
-//            String word;
-//            String[] words;
-//            String[] meanings;
-//
-//            System.out.println("No error");
-//            // package message into json based message protocol
-//            switch (action) {
-//
-//                case GET_DICTIONARY:
-//                    wordList = (JSONArray) response.get("words");
-//                    words = jsonArrayToString(wordList);
-//
-//                    // display words on GUI
-//                    wordTextArea.setText("");
-//                    setWordTextArea(words);
-//
-//                    consoleLog.append("Successfully retrieved dictionary" + "\n");
-//                    break;
-//                case GET_MEANING:
-//                    meaningList = (JSONArray) response.get("meanings");
-//                    wordJson = (JSONObject) response.get("word");
-//
-//                    word = wordJson.toString();
-//                    meanings = jsonArrayToString(meaningList);
-//
-//                    // display words on GUI
-//                    meaningTextArea.setText("");
-//                    setMeaningsTextArea(meanings, word);
-//
-//                    consoleLog.append("Successfully retrieved word meanings for the word " + word + "\n");
-//                    break;
-//                case ADD_MEANING:
-//                    meaningList = (JSONArray) response.get("meanings");
-//                    wordJson = (JSONObject) response.get("word");
-//
-//                    word = wordJson.toString();
-//                    meanings = jsonArrayToString(meaningList);
-//
-//                    // display words on GUI
-//                    meaningTextArea.setText("");
-//                    setMeaningsTextArea(meanings, word);
-//                    consoleLog.append("Successfully added meaning to word " + "\n");
-//                    break;
-//                case UPDATE_MEANING:
-//                    meaningList = (JSONArray) response.get("meanings");
-//                    wordJson = (JSONObject) response.get("word");
-//
-//                    word = wordJson.toString();
-//                    meanings = jsonArrayToString(meaningList);
-//
-//                    // display words on GUI
-//                    meaningTextArea.setText("");
-//                    setMeaningsTextArea(meanings, word);
-//                    consoleLog.append("Successfully updated meaning for word " + "\n");
-//                    break;
-//                case REMOVE_WORD:
-//                    wordList = (JSONArray) response.get("words");
-//                    words = jsonArrayToString(wordList);
-//
-//                    // display words on GUI
-//                    wordTextArea.setText("");
-//                    setWordTextArea(words);
-//                    consoleLog.append("Successfully removed word " + "\n");
-//                    break;
-//                case ADD_WORD:
-//                    wordList = (JSONArray) response.get("words");
-//                    words = jsonArrayToString(wordList);
-//
-//                    // display words on GUI
-//                    wordTextArea.setText("");
-//                    setWordTextArea(words);
-//                    consoleLog.append("Successfully added word " + "\n");
-//                    break;
-//                default:
-//                    break;
-//            }
-//        }
+        JSONArray jsonArray = new JSONArray();
+        for (String item : list) {
+            jsonArray.put(item);
+        }
+        return jsonArray;
     }
 
     /**
