@@ -13,9 +13,19 @@ import java.util.*;
 public class Dictionary implements Serializable {
 
     /**
+     * Serial UID to reuse generated data.
+     */
+    private static final long serialVersionUID = 1L;
+
+    /**
      * Word Dictionary Hashmap
      */
     private HashMap<String, ArrayList<String>> WordDictionary;
+
+    /**
+     * File path of saved data.
+     */
+    private String filePath;
 
     public Dictionary() {
 
@@ -30,9 +40,9 @@ public class Dictionary implements Serializable {
         try {
 
             tempDictionary.addWord("Novel", "A long, fictional narrative that describes intimate human experiences, typically in prose form.");
-            tempDictionary.addDescription("New and not resembling something formerly known or used.", "Novel");
+            tempDictionary.addDescription("Novel", "New and not resembling something formerly known or used.");
             tempDictionary.addWord("Bank", "The land alongside or sloping down to a river or lake.");
-            tempDictionary.addDescription("An establishment for the custody, loan, exchange, or issue of money, for the extension of credit, and for facilitating the transmission of funds.", "Bank");
+            tempDictionary.addDescription("Bank", "An establishment for the custody, loan, exchange, or issue of money, for the extension of credit, and for facilitating the transmission of funds.");
             tempDictionary.addWord("Aloof", "Not friendly or forthcoming; cool and distant.");
             tempDictionary.addWord("Ephemeral", "Lasting for a very short time");
             tempDictionary.addWord("Serendipity", "The occurrence and development of events by chance in a happy or beneficial way.");
@@ -43,17 +53,27 @@ public class Dictionary implements Serializable {
             e.printStackTrace();
         }
 
-        // serialise hashmap
-        try (FileOutputStream fileOut = new FileOutputStream("Dictionary.ser");
-             ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
-
-            out.writeObject(tempDictionary);
-        } catch (IOException e) {
-
-            e.printStackTrace();
-        }
+        // save data
+        saveData(tempDictionary);
     }
 
+    /**
+     * Setter for the dictionary.
+     * @param wordDictionary HashMap to set as dictionary.
+     */
+    public void setWordDictionary(HashMap<String, ArrayList<String>> wordDictionary) {
+
+        this.WordDictionary = wordDictionary;
+    }
+
+    /**
+     * Getter for the dictionary.
+     * @return Dictionary hashmap.
+     */
+    public HashMap<String, ArrayList<String>> getWordDictionary() {
+
+        return this.WordDictionary;
+    }
 
     /**
      * Get the list of word meanings.
@@ -72,6 +92,18 @@ public class Dictionary implements Serializable {
         }
     }
 
+    public static void saveData(Dictionary d) {
+
+        // serialise hashmap
+        try (FileOutputStream fileOut = new FileOutputStream("Dictionary.ser");
+             ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
+
+            out.writeObject(d);
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
+    }
     /**
      * Method to remove word from the dictionary.
      * @param word word to remove from dictionary.
@@ -137,7 +169,7 @@ public class Dictionary implements Serializable {
      * @param description word description
      * @throws InvalidDescription entered description already exists
      */
-    public void addDescription(String description, String word) throws InvalidDescription {
+    public void addDescription(String word, String description) throws InvalidDescription {
 
         try {
 

@@ -1,6 +1,10 @@
 package UI;
 
 // imports
+import Helper.ActionType;
+import Helper.Actions;
+import org.json.JSONObject;
+
 import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -16,11 +20,9 @@ public class DictionaryClient extends JFrame {
     /* UI Elements */
     private JPanel mainPanel;
     private JLabel addressLabel;
-    private JLabel serverConnectionLabel;
     private JLabel portLabel;
     private JTable dictionaryTable;
     private JLabel dictionaryLabel;
-    private JLabel actionLabel;
     private JLabel logLabel;
     private JTextArea consoleLog;
     private JTextField serverAddressTextField;
@@ -49,29 +51,29 @@ public class DictionaryClient extends JFrame {
     /**
      * Socket Address
      */
-    private static String address;
+    private String address;
 
     /**
      * Server Port
      */
-    private static int port;
+    private int port;
 
     /**
      * Socket connection object.
      */
-    private static Socket socket;
+    private Socket socket;
 
     /**
      * Buffered Data Reader for JSON data into the client.
      */
-    private static BufferedReader in;
+    private BufferedReader in;
 
     /**
      * Buffered Data Writer for JSON data to the server.
      */
-    private static BufferedWriter out;
+    private BufferedWriter out;
 
-    public DictionaryClient() {
+    public DictionaryClient(String[] args) {
 
         setContentPane(mainPanel);
         setTitle("Interactive Dictionary");
@@ -79,14 +81,17 @@ public class DictionaryClient extends JFrame {
         setSize(1200, 800);
         setLocationRelativeTo(null);
         setVisible(true);
-    }
-
-    public static void main(String[] args) {
-        new DictionaryClient();
 
         try {
 
-            setUpClient2Server(args);
+            // server parameters
+            port = Integer.parseInt(args[1]);
+            address = args[0];
+
+            Actions startAction = new Actions();
+
+            // initial request
+            request(startAction);
         }
         catch (UnknownHostException e)
         {
@@ -105,31 +110,88 @@ public class DictionaryClient extends JFrame {
                     socket.close();
                 }
                 catch (IOException e) {
+
                     e.printStackTrace();
                 }
             }
         }
     }
 
-    /**
-     * Set up the client - server connection.
-     * @param args initial arguments for server setup.
-     * @throws UnknownHostException undetermined host ip.
-     * @throws IOException failed IO stream set up.
-     */
-    public static void setUpClient2Server(String[] args) throws UnknownHostException, IOException {
+    public static void main(String[] args) {
 
-        port = Integer.parseInt(args[1]);
-        address = args[0];
+        new DictionaryClient(args);
+    }
 
-        // Create a stream socket bounded to any port and connect it to the
+    public void request(Actions serverAction) throws UnknownHostException, IOException {
+
+        // Socket connection to server
         socket = new Socket(address, port);
         System.out.println("Connection established");
 
-        // Set the IO stream for client - server communication.
-        in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
+        // Create new IO stream for client request.
+        in = new BufferedReader(
+                new InputStreamReader(socket.getInputStream(), "UTF-8"));
         out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
-    }
 
-//    public static void sendTask()
+        // package message into json based message protocol
+        JSONObject packet = new JSONObject();
+        ActionType action = serverAction.getActionType();
+        switch (action) {
+
+            case GET_DICTIONARY:
+                packet.put("method", "get dictionary");
+                break;
+            case GET_MEANING:
+                packet.put("method", "get meaning");
+                packet.put("word", serverAction.getWord());
+                break;
+            case ADD_MEANING:
+                packet.put("method", "add meaning");
+                packet.put("word", serverAction.getWord());
+                packet.put("meaning", serverAction.getMeaning());
+                break;
+            case UPDATE_MEANING:
+                packet.put("method", "update meaning");
+                packet.put("word", serverAction.getWord());
+                packet.put("meaning", serverAction.getMeaning());
+                packet.put("previous meaning", serverAction.getPrevMeaning());
+                break;
+            case REMOVE_WORD:
+                packet.put("method", "remove word");
+                packet.put("word", serverAction.getWord());
+                break;
+            case ADD_WORD:
+                packet.put("method", "add word");
+                packet.put("word", serverAction.getWord());
+                break;
+            default:
+                break;
+        }
+        out.write(packet.toString());
+        out.newLine();
+        out.flush();                     // Flush buffered writer contents.
+
+        // await server response
+        boolean successRes = false;
+        while(!successRes) {
+
+            if (in.ready()) {           /* Response received */
+                String res = in.readLine();
+                System.out.println(res);
+                successRes = true;
+            }
+        }
+
+        // Await server response
+        String response = in.readLine();  // Read server response
+        if (response != null) {
+            System.out.println("Server response: " + response);
+        } else {
+            System.out.println("No response received from server.");
+        }
+
+        // Close resources
+        in.close();
+        out.close();
+    }
 }
