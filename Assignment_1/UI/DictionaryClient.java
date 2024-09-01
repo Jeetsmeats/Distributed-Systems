@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.swing.*;
+import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -31,13 +32,13 @@ public class DictionaryClient extends JFrame {
     private JButton connectBtn;
     private JLabel newConnectionLabel;
     private JButton addBtn;
-    private JTextField addWordHereTextField;
+    private JTextField addWordTextField;
     private JButton removeBtn;
     private JLabel meaningLabel;
     private JLabel searchMeaningLabel;
     private JTextField searchWordTextField;
     private JLabel updateMeaningLabel;
-    private JTextField updateMeaningTextField;
+    private JTextField updatedMeaningTextField;
     private JButton updateBtn;
     private JTextField addMeaningTextField;
     private JButton addMeaningButton;
@@ -51,6 +52,7 @@ public class DictionaryClient extends JFrame {
     private JLabel currentWordLabel;
     private JTextArea meaningTextArea;
     private JTextArea wordTextArea;
+    private JButton connectButton;
 
     /**
      * Socket Address
@@ -77,12 +79,132 @@ public class DictionaryClient extends JFrame {
      */
     private BufferedWriter out;
 
+    /**
+     * Address Label text
+     */
+    private static final String addressLabelText = "DictionaryServer Address: ";
+
+    /**
+     * Port label text
+     */
+    private static final String portLabelText = "DictionaryServer Port: ";
+
+    /**
+     * Address Text Field label text
+     */
+    private static final String enterAddressLabelText = "Enter Address Here...";
+
+    /**
+     * Port Text Field label text
+     */
+    private static final String enterPortLabelText = "Enter Port Here...";
+
+    /**
+     * Search word text field label text
+     */
+    private static final String searchWordLabelText = "Search word...";
+
+    /**
+     * Add word text field label text
+     */
+    private static final String addWordLabelText = "Add word here...";
+
+    /**
+     * Remove word text field label text
+     */
+    private static final String removeWordLabelText = "Remove word...";
+
+    /**
+     * Update meaning text field label text
+     */
+    private static final String meaningToUpdateLabelText = "Meaning to update...";
+
+    /**
+     * Updated meaning text field label text
+     */
+    private static final String updatedMeaningLabelText = "Updated meaning...";
+
+    /**
+     * Add meaning text field label text
+     */
+    private static final String addMeaningLabelText = "Add meaning...";
+
     public DictionaryClient(String[] args) {
+
+        try {
+
+            // server parameters
+            port = Integer.parseInt(args[1]);
+            address = args[0];
+
+            addressLabel.setText(addressLabel.getText() + " " + address);
+            portLabel.setText(portLabel.getText() + " " + port);
+            Actions startAction = new Actions();
+
+            // initial request
+            request(startAction);
+        } catch (UnknownHostException e) {
+
+            consoleLog.append(e.getMessage() + " is an unknown host.  Try again!\n");
+        } catch (IOException | NumberFormatException e) {
+
+            consoleLog.append(e.getMessage());
+        } finally {
+
+            // Close the socket
+            if (socket != null) {
+                try {
+                    socket.close();
+                }
+                catch (IOException e) {
+
+                    consoleLog.append(e.getMessage());
+                }
+            }
+        }
+
+        connectButton.addActionListener(e -> {
+
+            try {
+                address = serverAddressTextField.getText();
+                port = Integer.parseInt(serverPortTextField.getText());
+
+                serverAddressTextField.setText(enterAddressLabelText);
+                serverPortTextField.setText(enterPortLabelText);
+
+                socket = new Socket(address, port);
+                addressLabel.setText(addressLabelText + " " + address);
+                portLabel.setText(portLabelText + " " + port);
+                System.out.println("Reached this point");
+            } catch (UnknownHostException err) {
+
+                consoleLog.append(err.getMessage() + " is an unknown host.  Try again!\n");
+                addressLabel.setText(addressLabelText);
+                portLabel.setText(portLabelText);
+            } catch (IOException | NumberFormatException err) {
+
+                consoleLog.append(err.getMessage() + "\n");
+                addressLabel.setText(addressLabelText);
+                portLabel.setText(portLabelText);
+            } finally {
+
+                // Close the socket
+                if (socket != null) {
+                    try {
+                        socket.close();
+                    }
+                    catch (IOException err) {
+
+                        consoleLog.append(err.getMessage());
+                    }
+                }
+            }
+        });
 
         setContentPane(mainPanel);
         setTitle("Interactive Dictionary");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1200, 800);
+        setSize(1800, 800);
         setLocationRelativeTo(null);
         setVisible(true);
 
@@ -99,25 +221,24 @@ public class DictionaryClient extends JFrame {
         meaningTextArea.setEditable(false);
         meaningTextArea.setLineWrap(true);
         meaningTextArea.setWrapStyleWord(true);
+    }
+
+    public static void main(String[] args) {
+
+        new DictionaryClient(args);
+    }
+
+    public void requestAction(Actions action) {
 
         try {
 
-            // server parameters
-            port = Integer.parseInt(args[1]);
-            address = args[0];
+            request(action);
+            System.out.println("Something is happening");
+        } catch (UnknownHostException e) {
 
-            addressLabel.setText(addressLabel.getText() + " " + address);
-            portLabel.setText(portLabel.getText() + " " + port);
-            Actions startAction = new Actions();
+            consoleLog.append(e.getMessage() + " is an unknown host.  Try again!\n");
+        } catch (IOException | NumberFormatException e) {
 
-            // initial request
-            request(startAction);
-        }
-        catch (UnknownHostException | NumberFormatException e)
-        {
-            consoleLog.append(e.getMessage());
-        } catch (IOException e)
-        {
             consoleLog.append(e.getMessage());
         } finally {
 
@@ -132,11 +253,6 @@ public class DictionaryClient extends JFrame {
                 }
             }
         }
-    }
-
-    public static void main(String[] args) {
-
-        new DictionaryClient(args);
     }
 
     /**

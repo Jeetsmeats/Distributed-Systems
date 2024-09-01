@@ -12,6 +12,7 @@ import org.json.*;
 import java.lang.Object.*;
 import DataStructures.Dictionary;
 import ThreadPool.ThreadPool;
+import org.stjs.javascript.JSON;
 
 /**
  * Dictionary Server
@@ -98,7 +99,7 @@ public class DictionaryServer {
         // JSON packet for sending through TCP buffer
         JSONObject packet = new JSONObject();
         try {
-            JSONObject methodJson = (JSONObject) req.get("method");
+            Object methodJson = (Object) req.get("method");
             String method = methodJson.toString();
 
             JSONObject wordJson;
@@ -117,7 +118,7 @@ public class DictionaryServer {
 
                     words = dictionary.getWords();
                     wordArray = addList2JSONArray(words);
-                    packet.put("words", wordArray);
+                    packet.put("word", wordArray);
                     break;
                 case "get meaning":
 
