@@ -95,7 +95,36 @@ public class DictionaryServer {
      */
     private static void response(JSONObject req, BufferedWriter outputStream, BufferedReader inputStream) throws IOException {
 
-        // read client request data
+        JSONObject methodJson = (JSONObject) req.get("method");
+        String method = methodJson.toString();
+
+        JSONObject word;
+        JSONObject meaning;
+        switch (method) {
+
+            case "get dictionary":
+                ArrayList<String> words = dictionary.getWords();
+
+                break;
+            case "get meaning":
+                break;
+            case "add meaning":
+                break;
+            case "update meaning":
+                break;
+            case "remove word":
+                break;
+            case "add word":
+                break;
+        }
+
+        outputStream.write(packet.toString());
+        outputStream.newLine();
+        outputStream.flush();                     // Flush buffered writer contents.
+
+//        // package message into json based message protocol
+//        JSONObject packet = new JSONObject();
+//        ActionType action = serverAction.getActionType();
 //        switch (action) {
 //
 //            case GET_DICTIONARY:
@@ -114,7 +143,7 @@ public class DictionaryServer {
 //                packet.put("method", "update meaning");
 //                packet.put("word", serverAction.getWord());
 //                packet.put("meaning", serverAction.getMeaning());
-//                packet.put("previous meaning", serverAction.getPrevMeaning())
+//                packet.put("previous meaning", serverAction.getPrevMeaning());
 //                break;
 //            case REMOVE_WORD:
 //                packet.put("method", "remove word");
@@ -133,26 +162,109 @@ public class DictionaryServer {
 //
 //        // await server response
 //        boolean successRes = false;
+//        String res = null;
+//
 //        while(!successRes) {
 //
 //            if (in.ready()) {           /* Response received */
-//                String res = in.readLine();
+//                res = in.readLine();
 //                System.out.println(res);
 //                successRes = true;
 //            }
 //        }
 //
-//        // Await server response
-//        String response = in.readLine();  // Read server response
-//        if (response != null) {
-//            System.out.println("Server response: " + response);
-//        } else {
-//            System.out.println("No response received from server.");
-//        }
-//
 //        // Close resources
 //        in.close();
 //        out.close();
+//
+//        JSONObject response = new JSONObject(res);
+//        // check for errors
+//        try {
+//
+//            JSONObject err = (JSONObject) response.get("error");
+//            consoleLog.append(err.toString() + "\n");
+//        } catch (JSONException e) {
+//
+//            JSONArray wordList;
+//            JSONArray meaningList;
+//            JSONObject wordJson;
+//            String word;
+//            String[] words;
+//            String[] meanings;
+//
+//            System.out.println("No error");
+//            // package message into json based message protocol
+//            switch (action) {
+//
+//                case GET_DICTIONARY:
+//                    wordList = (JSONArray) response.get("words");
+//                    words = jsonArrayToString(wordList);
+//
+//                    // display words on GUI
+//                    wordTextArea.setText("");
+//                    setWordTextArea(words);
+//
+//                    consoleLog.append("Successfully retrieved dictionary" + "\n");
+//                    break;
+//                case GET_MEANING:
+//                    meaningList = (JSONArray) response.get("meanings");
+//                    wordJson = (JSONObject) response.get("word");
+//
+//                    word = wordJson.toString();
+//                    meanings = jsonArrayToString(meaningList);
+//
+//                    // display words on GUI
+//                    meaningTextArea.setText("");
+//                    setMeaningsTextArea(meanings, word);
+//
+//                    consoleLog.append("Successfully retrieved word meanings for the word " + word + "\n");
+//                    break;
+//                case ADD_MEANING:
+//                    meaningList = (JSONArray) response.get("meanings");
+//                    wordJson = (JSONObject) response.get("word");
+//
+//                    word = wordJson.toString();
+//                    meanings = jsonArrayToString(meaningList);
+//
+//                    // display words on GUI
+//                    meaningTextArea.setText("");
+//                    setMeaningsTextArea(meanings, word);
+//                    consoleLog.append("Successfully added meaning to word " + "\n");
+//                    break;
+//                case UPDATE_MEANING:
+//                    meaningList = (JSONArray) response.get("meanings");
+//                    wordJson = (JSONObject) response.get("word");
+//
+//                    word = wordJson.toString();
+//                    meanings = jsonArrayToString(meaningList);
+//
+//                    // display words on GUI
+//                    meaningTextArea.setText("");
+//                    setMeaningsTextArea(meanings, word);
+//                    consoleLog.append("Successfully updated meaning for word " + "\n");
+//                    break;
+//                case REMOVE_WORD:
+//                    wordList = (JSONArray) response.get("words");
+//                    words = jsonArrayToString(wordList);
+//
+//                    // display words on GUI
+//                    wordTextArea.setText("");
+//                    setWordTextArea(words);
+//                    consoleLog.append("Successfully removed word " + "\n");
+//                    break;
+//                case ADD_WORD:
+//                    wordList = (JSONArray) response.get("words");
+//                    words = jsonArrayToString(wordList);
+//
+//                    // display words on GUI
+//                    wordTextArea.setText("");
+//                    setWordTextArea(words);
+//                    consoleLog.append("Successfully added word " + "\n");
+//                    break;
+//                default:
+//                    break;
+//            }
+//        }
     }
 
     /**

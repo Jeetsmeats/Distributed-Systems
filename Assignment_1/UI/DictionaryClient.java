@@ -3,6 +3,8 @@ package UI;
 // imports
 import Helper.ActionType;
 import Helper.Actions;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.swing.*;
@@ -21,7 +23,6 @@ public class DictionaryClient extends JFrame {
     private JPanel mainPanel;
     private JLabel addressLabel;
     private JLabel portLabel;
-    private JTable dictionaryTable;
     private JLabel dictionaryLabel;
     private JLabel logLabel;
     private JTextArea consoleLog;
@@ -31,13 +32,10 @@ public class DictionaryClient extends JFrame {
     private JLabel newConnectionLabel;
     private JButton addBtn;
     private JTextField addWordHereTextField;
-    private JComboBox removeWordComboBox;
     private JButton removeBtn;
-    private JTextPane meaningTextPane;
     private JLabel meaningLabel;
     private JLabel searchMeaningLabel;
     private JTextField searchWordTextField;
-    private JComboBox updateMeaningComboBox;
     private JLabel updateMeaningLabel;
     private JTextField updateMeaningTextField;
     private JButton updateBtn;
@@ -47,6 +45,12 @@ public class DictionaryClient extends JFrame {
     private JLabel addMeaningLabel;
     private JLabel addWordLabel;
     private JLabel removeWordLabel;
+    private JButton getDictionary;
+    private JTextField removeWordTextField;
+    private JTextField meaningToUpdateTextField;
+    private JLabel currentWordLabel;
+    private JTextArea meaningTextArea;
+    private JTextArea wordTextArea;
 
     /**
      * Socket Address
@@ -82,12 +86,28 @@ public class DictionaryClient extends JFrame {
         setLocationRelativeTo(null);
         setVisible(true);
 
+        // initialise word text area to show data.
+        wordTextArea.setEditable(false);  // Make it non-editable
+        wordTextArea.setLineWrap(true);   // Optional: wrap lines
+        wordTextArea.setWrapStyleWord(true); // Optional: wrap at word boundaries
+
+        // Initialize JTextArea as the console
+        consoleLog.setEditable(false);  // Make it non-editable
+        consoleLog.setLineWrap(true);   // Optional: wrap lines
+        consoleLog.setWrapStyleWord(true); // Optional: wrap at word boundaries
+
+        meaningTextArea.setEditable(false);
+        meaningTextArea.setLineWrap(true);
+        meaningTextArea.setWrapStyleWord(true);
+
         try {
 
             // server parameters
             port = Integer.parseInt(args[1]);
             address = args[0];
 
+            addressLabel.setText(addressLabel.getText() + " " + address);
+            portLabel.setText(portLabel.getText() + " " + port);
             Actions startAction = new Actions();
 
             // initial request
@@ -173,25 +193,153 @@ public class DictionaryClient extends JFrame {
 
         // await server response
         boolean successRes = false;
+        String res = null;
+
         while(!successRes) {
 
             if (in.ready()) {           /* Response received */
-                String res = in.readLine();
+                res = in.readLine();
                 System.out.println(res);
                 successRes = true;
             }
         }
 
-        // Await server response
-        String response = in.readLine();  // Read server response
-        if (response != null) {
-            System.out.println("Server response: " + response);
-        } else {
-            System.out.println("No response received from server.");
-        }
-
         // Close resources
         in.close();
         out.close();
+
+        JSONObject response = new JSONObject(res);
+        // check for errors
+        try {
+
+            JSONObject err = (JSONObject) response.get("error");
+            consoleLog.append(err.toString() + "\n");
+        } catch (JSONException e) {
+
+            JSONArray wordList;
+            JSONArray meaningList;
+            JSONObject wordJson;
+            String word;
+            String[] words;
+            String[] meanings;
+
+            System.out.println("No error");
+            // package message into json based message protocol
+            switch (action) {
+
+                case GET_DICTIONARY:
+
+                    wordActions(response);
+                    consoleLog.append("Successfully retrieved dictionary.\n");
+                    break;
+                case GET_MEANING:
+
+                    meaningActions(response);
+                    consoleLog.append("Successfully retrieved word meanings.\n");
+                    break;
+                case ADD_MEANING:
+
+                    meaningActions(response);
+                    consoleLog.append("Successfully added meaning to word.\n");
+                    break;
+                case UPDATE_MEANING:
+
+                    meaningActions(response);
+                    consoleLog.append("Successfully updated meaning for word.\n");
+                    break;
+                case REMOVE_WORD:
+
+                    wordActions(response);
+                    consoleLog.append("Successfully removed word.\n" + "\n");
+                    break;
+                case ADD_WORD:
+
+                    wordActions(response);
+                    consoleLog.append("Successfully added word.\n");
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Convert JSONArray to a string.
+     * @param jsonArray JSONArray retrieved from server.
+     * @return String array containing item list.
+     */
+    private String[] jsonArrayToString(JSONArray jsonArray) {
+
+        // initialise string array
+        String[] stringArray = new String[jsonArray.length()];
+
+        for (int i = 0; i < jsonArray.length(); i++) {
+
+            // set string at index
+            stringArray[i] = jsonArray.getString(i);
+        }
+        return stringArray;
+    }
+
+    /**
+     * Set the word text area to display dictionary words.
+     * @param words words to display on text area.
+     */
+    private void setWordTextArea(String[] words) {
+
+        for (String word : words) {
+
+            wordTextArea.append(word + "\n");
+        }
+    }
+
+    /**
+     * Set the meanings text area to display word meanings
+     * @param meanings list of meanings associated to a selected word.
+     * @param word word corresponding to meanings.
+     */
+    private void setMeaningsTextArea(String[] meanings, String word) {
+
+        for (String meaning : meanings) {
+
+            meaningTextArea.append(meaning + "\n");
+        }
+
+        currentWordLabel.setText(currentWordLabel.getText() + " " + word);
+    }
+
+    /**
+     * Word actions to update GUI: Add word, Remove word, Get Dictionary
+     * @param response server response
+     */
+    private void wordActions(JSONObject response) {
+
+        JSONArray wordList = (JSONArray) response.get("words");
+        String[] words = jsonArrayToString(wordList);
+
+        // display words on GUI
+        wordTextArea.setText("");
+        setWordTextArea(words);
+    }
+
+    /**
+     * Meaning actions to update GUI:
+     * @param response server response
+     */
+    private void meaningActions(JSONObject response) {
+
+        JSONArray meaningList;
+        JSONObject wordJson;
+        String word;
+        String[] meanings;
+
+        meaningList = (JSONArray) response.get("meanings");
+        wordJson = (JSONObject) response.get("word");
+
+        word = wordJson.toString();
+        meanings = jsonArrayToString(meaningList);
+
+        meaningTextArea.setText("");
+        setMeaningsTextArea(meanings, word);
     }
 }

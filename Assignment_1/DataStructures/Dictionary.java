@@ -75,6 +75,11 @@ public class Dictionary implements Serializable {
         return this.WordDictionary;
     }
 
+    public ArrayList<String> getWords() {
+
+        return new ArrayList<String>(this.WordDictionary.keySet());
+    }
+
     /**
      * Get the list of word meanings.
      * @param word Selected word
