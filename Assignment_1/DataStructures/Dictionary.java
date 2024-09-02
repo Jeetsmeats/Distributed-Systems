@@ -48,16 +48,18 @@ public class Dictionary implements Serializable {
             tempDictionary.addWord("Serendipity", "The occurrence and development of events by chance in a happy or beneficial way.");
             tempDictionary.addWord("Obfuscate", "To render obscure, unclear, or unintelligible");
 
+            // save data
+            saveData(tempDictionary);
         } catch (InvalidDescription e) {
 
             e.printStackTrace();
         } catch (InvalidWordException e) {
 
             e.printStackTrace();
-        }
+        } catch (InterruptedException e) {
 
-        // save data
-        saveData(tempDictionary);
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -100,7 +102,7 @@ public class Dictionary implements Serializable {
         }
     }
 
-    private static void saveData(Dictionary d) {
+    public static void saveData(Dictionary d) throws InterruptedException {
 
         // serialise hashmap
         try (FileOutputStream fileOut = new FileOutputStream("Dictionary.ser");
@@ -111,6 +113,8 @@ public class Dictionary implements Serializable {
 
             e.printStackTrace();
         }
+
+        Thread.sleep(3500);
     }
 
     /**

@@ -144,6 +144,14 @@ public class DictionaryServer {
 
                     packet.put("meaning", meaningsArray);
                     packet.put("word", word);
+
+                    try {
+
+                        Dictionary.saveData(dictionary);
+                    } catch (InterruptedException e) {
+
+                        e.printStackTrace();
+                    }
                     break;
                 case "update meaning":
 
@@ -161,6 +169,14 @@ public class DictionaryServer {
 
                     packet.put("meaning", meaningsArray);
                     packet.put("word", word);
+
+                    try {
+
+                        Dictionary.saveData(dictionary);
+                    } catch (InterruptedException e) {
+
+                        e.printStackTrace();
+                    }
                     break;
                 case "remove word":
 
@@ -172,6 +188,14 @@ public class DictionaryServer {
                     words = dictionary.getWords();
                     wordArray = addList2JSONArray(words);
                     packet.put("word", wordArray);
+
+                    try {
+
+                        Dictionary.saveData(dictionary);
+                    } catch (InterruptedException e) {
+
+                        e.printStackTrace();
+                    }
                     break;
                 case "add word":
 
@@ -186,6 +210,14 @@ public class DictionaryServer {
                     words = dictionary.getWords();
                     wordArray = addList2JSONArray(words);
                     packet.put("word", wordArray);
+
+                    try {
+
+                        Dictionary.saveData(dictionary);
+                    } catch (InterruptedException e) {
+
+                        e.printStackTrace();
+                    }
                     break;
                 default:
                     break;
