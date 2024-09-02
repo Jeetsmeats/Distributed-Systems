@@ -35,7 +35,7 @@ public class DictionaryServer {
         ServerSocketFactory factory = ServerSocketFactory.getDefault();
 
         // set up thread pool
-        ThreadPool threadPool = new ThreadPool(5, 10);
+        ThreadPool threadPool = new ThreadPool(2, 4);
 
         // create a new dictionary
         dictionary = new Dictionary();
