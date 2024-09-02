@@ -100,7 +100,7 @@ public class Dictionary implements Serializable {
         }
     }
 
-    public static void saveData(Dictionary d) {
+    private static void saveData(Dictionary d) {
 
         // serialise hashmap
         try (FileOutputStream fileOut = new FileOutputStream("Dictionary.ser");
@@ -195,7 +195,7 @@ public class Dictionary implements Serializable {
         // get the description index in array
         int descIdx = checkDescriptionExists(prevDescription, word);
 
-        if (descIdx == -1) throw new DescriptionNullException("Description does not exist.");
+        if (descIdx == -1) throw new DescriptionNullException("Meaning does not exist.");
 
         // update description
         this.WordDictionary.get(word).set(descIdx, newDescription);

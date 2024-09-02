@@ -1,5 +1,7 @@
 package Helper;
 
+import javax.swing.*;
+
 /**
  * Action being sent from client.
  */
@@ -45,11 +47,11 @@ public class Actions {
      * @param word actionable word
      * @param meaning actionable meaning
      */
-    public Actions(String word, String meaning) {
+    public Actions(String word, String meaning, ActionType actionType) {
 
         this.word = word;
         this.meaning = meaning;
-        this.actionType = ActionType.ADD_MEANING;
+        this.actionType = actionType;
     }
 
     /**

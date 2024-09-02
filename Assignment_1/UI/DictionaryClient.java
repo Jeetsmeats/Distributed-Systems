@@ -8,7 +8,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.swing.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -53,6 +54,7 @@ public class DictionaryClient extends JFrame {
     private JTextArea meaningTextArea;
     private JTextArea wordTextArea;
     private JButton connectButton;
+    private JTextField includeMeaningTextField;
 
     /**
      * Socket Address
@@ -80,6 +82,11 @@ public class DictionaryClient extends JFrame {
     private BufferedWriter out;
 
     /**
+     * Word that was queried.
+     */
+    private String currentWord;
+
+    /**
      * Address Label text
      */
     private static final String addressLabelText = "DictionaryServer Address: ";
@@ -92,12 +99,12 @@ public class DictionaryClient extends JFrame {
     /**
      * Address Text Field label text
      */
-    private static final String enterAddressLabelText = "Enter Address Here...";
+    private static final String enterAddressLabelText = "Enter address Here...";
 
     /**
      * Port Text Field label text
      */
-    private static final String enterPortLabelText = "Enter Port Here...";
+    private static final String enterPortLabelText = "Enter port Here...";
 
     /**
      * Search word text field label text
@@ -108,6 +115,11 @@ public class DictionaryClient extends JFrame {
      * Add word text field label text
      */
     private static final String addWordLabelText = "Add word here...";
+
+    /**
+     * Include meaning text field label text
+     */
+    private static final String includeMeaningLabelText = "Include meaning...";
 
     /**
      * Remove word text field label text
@@ -129,6 +141,10 @@ public class DictionaryClient extends JFrame {
      */
     private static final String addMeaningLabelText = "Add meaning...";
 
+    /**
+     * Current word label text
+     */
+    private static final String currentWordLabelText = "Current Word:";
     public DictionaryClient(String[] args) {
 
         try {
@@ -148,7 +164,7 @@ public class DictionaryClient extends JFrame {
             consoleLog.append(e.getMessage() + " is an unknown host.  Try again!\n");
         } catch (IOException | NumberFormatException e) {
 
-            consoleLog.append(e.getMessage());
+            consoleLog.append(e.getMessage() + "\n");
         } finally {
 
             // Close the socket
@@ -158,7 +174,7 @@ public class DictionaryClient extends JFrame {
                 }
                 catch (IOException e) {
 
-                    consoleLog.append(e.getMessage());
+                    consoleLog.append(e.getMessage() + "\n");
                 }
             }
         }
@@ -195,12 +211,108 @@ public class DictionaryClient extends JFrame {
                     }
                     catch (IOException err) {
 
-                        consoleLog.append(err.getMessage());
+                        consoleLog.append(err.getMessage() + "\n");
                     }
                 }
             }
         });
 
+        getDictionary.addActionListener(e -> {
+
+            Actions act = new Actions();
+            requestAction(act);
+        });
+
+        searchWordButton.addActionListener(e -> {
+
+            String word = searchWordTextField.getText();
+            if (word.equals(searchWordLabelText) || word.isEmpty()) {
+
+                consoleLog.append("Enter a word to search meanings!");
+            } else {
+
+                searchWordTextField.setText(searchWordLabelText);
+                Actions act = new Actions(word, ActionType.GET_MEANING);
+                requestAction(act);
+            }
+        });
+
+        addBtn.addActionListener(e -> {
+
+            String word = addWordTextField.getText();
+            addWordTextField.setText(addWordLabelText);
+
+            if (word.equals(addWordLabelText) || word.isEmpty()) {
+
+                consoleLog.append("Enter a new word!\n");
+            } else if (includeMeaningTextField.getText().equals(includeMeaningLabelText)) {
+
+                consoleLog.append("Must add meaning to the new word!\n");
+            } else {
+
+                String meaning = includeMeaningTextField.getText();
+                includeMeaningTextField.setText(includeMeaningLabelText);
+                Actions act = new Actions(word, meaning, ActionType.ADD_WORD);
+                requestAction(act);
+            }
+        });
+
+        removeBtn.addActionListener(e -> {
+
+            String word = removeWordTextField.getText();
+            if (word.equals(removeWordLabelText) || word.isEmpty()) {
+
+                consoleLog.append("Enter a word to remove!\n");
+            } else {
+
+                removeWordTextField.setText(removeWordLabelText);
+                Actions act = new Actions(word, ActionType.REMOVE_WORD);
+                requestAction(act);
+            }
+        });
+
+        addMeaningButton.addActionListener(e -> {
+
+            String word = currentWord;
+            String meaning = addMeaningTextField.getText();
+            if (meaning.equals(addMeaningLabelText) || meaning.isEmpty()) {
+
+                consoleLog.append("Must add meaning to the current word!\n");
+            } else if (word == null) {
+
+                consoleLog.append("Select a new word to add meaning to it!\n");
+            } else {
+
+                addMeaningTextField.setText(addMeaningLabelText);
+                Actions act = new Actions(word, meaning, ActionType.ADD_MEANING);
+                requestAction(act);
+            }
+            addMeaningTextField.setText(addMeaningLabelText);
+        });
+
+        updateBtn.addActionListener(e -> {
+
+            String word = currentWord;
+            String prevMeaning = meaningToUpdateTextField.getText();
+            String meaning =  updatedMeaningTextField.getText();
+
+            if (meaning.equals(updatedMeaningLabelText) || meaning.isEmpty()) {
+
+                consoleLog.append("Enter a new meaning!\n");
+            } else if (prevMeaning.equals(meaningToUpdateLabelText) || prevMeaning.isEmpty()) {
+
+                consoleLog.append("Enter a meaning to update!\n");
+            } else if (word == null) {
+
+                consoleLog.append("Select a new word to update a meaning!\n");
+            } else {
+
+                updatedMeaningTextField.setText(updatedMeaningLabelText);
+                meaningToUpdateTextField.setText(meaningToUpdateLabelText);
+                Actions act = new Actions(word, meaning, prevMeaning);
+                requestAction(act);
+            }
+        });
         setContentPane(mainPanel);
         setTitle("Interactive Dictionary");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -237,9 +349,13 @@ public class DictionaryClient extends JFrame {
         } catch (UnknownHostException e) {
 
             consoleLog.append(e.getMessage() + " is an unknown host.  Try again!\n");
+            addressLabel.setText(addressLabelText);
+            portLabel.setText(portLabelText);
         } catch (IOException | NumberFormatException e) {
 
-            consoleLog.append(e.getMessage());
+            consoleLog.append(e.getMessage() +  "\n");
+            addressLabel.setText(addressLabelText);
+            portLabel.setText(portLabelText);
         } finally {
 
             // Close the socket
@@ -249,7 +365,9 @@ public class DictionaryClient extends JFrame {
                 }
                 catch (IOException e) {
 
-                    consoleLog.append(e.getMessage());
+                    consoleLog.append(e.getMessage() + "\n");
+                    addressLabel.setText(addressLabelText);
+                    portLabel.setText(portLabelText);
                 }
             }
         }
@@ -302,7 +420,7 @@ public class DictionaryClient extends JFrame {
             case ADD_WORD:
                 packet.put("method", "add word");
                 packet.put("word", serverAction.getWord());
-                packet.put("description", serverAction.getMeaning());
+                packet.put("meaning", serverAction.getMeaning());
                 break;
             default:
                 break;
@@ -332,7 +450,7 @@ public class DictionaryClient extends JFrame {
         // check for errors
         try {
 
-            JSONObject err = (JSONObject) response.get("error");
+            Object err = response.get("error");
             consoleLog.append(err.toString() + "\n");
         } catch (JSONException e) {
 
@@ -364,7 +482,7 @@ public class DictionaryClient extends JFrame {
                 case REMOVE_WORD:
 
                     wordActions(response);
-                    consoleLog.append("Successfully removed word.\n" + "\n");
+                    consoleLog.append("Successfully removed word.\n");
                     break;
                 case ADD_WORD:
 
@@ -378,21 +496,75 @@ public class DictionaryClient extends JFrame {
     }
 
     /**
-     * Convert JSONArray to a string.
-     * @param jsonArray JSONArray retrieved from server.
-     * @return String array containing item list.
+     * Word actions to update GUI: Add word, Remove word, Get Dictionary
+     * @param response server response
      */
-    private String[] jsonArrayToString(JSONArray jsonArray) {
+    private void wordActions(JSONObject response) {
 
-        // initialise string array
-        String[] stringArray = new String[jsonArray.length()];
+        Object wordList = response.get("word");
+        try {
+            String[] words = object2String(wordList);
 
-        for (int i = 0; i < jsonArray.length(); i++) {
+            // display words on GUI
+            wordTextArea.setText("");
+            setWordTextArea(words);
+        } catch (IllegalArgumentException e) {
 
-            // set string at index
-            stringArray[i] = jsonArray.getString(i);
+            consoleLog.append(e.getMessage() + "\n");
         }
-        return stringArray;
+    }
+
+    /**
+     * Meaning actions to update GUI:
+     * @param response server response
+     */
+    private void meaningActions(JSONObject response) {
+
+        Object meaningList;
+        Object wordJson;
+        String word;
+        String[] meanings;
+
+        meaningList = response.get("meaning");
+        wordJson = response.get("word");
+
+        try {
+
+            word = wordJson.toString();
+            meanings = object2String(meaningList);
+
+            meaningTextArea.setText("");
+            setMeaningsTextArea(meanings, word);
+        } catch (IllegalArgumentException e) {
+
+            consoleLog.append(e.getMessage() + "\n");
+        }
+    }
+
+    /**
+     *
+     * @param array
+     * @return
+     */
+    private String[] object2String(Object array) throws IllegalArgumentException {
+
+        if (array instanceof JSONArray) {
+            // Cast the Object to JSONArray
+            JSONArray jsonArray = (JSONArray) array;
+
+            // Initialize string array
+            String[] stringArray = new String[jsonArray.length()];
+
+            // Convert each element of JSONArray to String and store in the stringArray
+            for (int i = 0; i < jsonArray.length(); i++) {
+                stringArray[i] = jsonArray.getString(i);
+            }
+
+            return stringArray;
+        } else {
+
+            throw new IllegalArgumentException("Expected JSONArray but got " + array.getClass().getName());
+        }
     }
 
     /**
@@ -414,46 +586,12 @@ public class DictionaryClient extends JFrame {
      */
     private void setMeaningsTextArea(String[] meanings, String word) {
 
+        currentWord = word;
         for (String meaning : meanings) {
 
             meaningTextArea.append(meaning + "\n");
         }
 
-        currentWordLabel.setText(currentWordLabel.getText() + " " + word);
-    }
-
-    /**
-     * Word actions to update GUI: Add word, Remove word, Get Dictionary
-     * @param response server response
-     */
-    private void wordActions(JSONObject response) {
-
-        JSONArray wordList = (JSONArray) response.get("word");
-        String[] words = jsonArrayToString(wordList);
-
-        // display words on GUI
-        wordTextArea.setText("");
-        setWordTextArea(words);
-    }
-
-    /**
-     * Meaning actions to update GUI:
-     * @param response server response
-     */
-    private void meaningActions(JSONObject response) {
-
-        JSONArray meaningList;
-        JSONObject wordJson;
-        String word;
-        String[] meanings;
-
-        meaningList = (JSONArray) response.get("meanings");
-        wordJson = (JSONObject) response.get("word");
-
-        word = wordJson.toString();
-        meanings = jsonArrayToString(meaningList);
-
-        meaningTextArea.setText("");
-        setMeaningsTextArea(meanings, word);
+        currentWordLabel.setText(currentWordLabelText + " " + currentWord);
     }
 }

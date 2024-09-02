@@ -99,11 +99,11 @@ public class DictionaryServer {
         // JSON packet for sending through TCP buffer
         JSONObject packet = new JSONObject();
         try {
-            Object methodJson = (Object) req.get("method");
+            Object methodJson = req.get("method");
             String method = methodJson.toString();
 
-            JSONObject wordJson;
-            JSONObject meaningJson;
+            Object wordJson;
+            Object meaningJson;
             JSONArray meaningsArray;
             JSONArray wordArray;
 
@@ -122,7 +122,7 @@ public class DictionaryServer {
                     break;
                 case "get meaning":
 
-                    wordJson = (JSONObject) req.get("word");
+                    wordJson = req.get("word");
                     word = wordJson.toString();
 
                     meanings = dictionary.getMeaning(word);
@@ -133,10 +133,10 @@ public class DictionaryServer {
                     break;
                 case "add meaning":
 
-                    wordJson = (JSONObject) req.get("word");
+                    wordJson = req.get("word");
                     word = wordJson.toString();
 
-                    meaningJson = (JSONObject) req.get("meaning");
+                    meaningJson = req.get("meaning");
                     meaning = meaningJson.toString();
 
                     meanings = dictionary.addDescription(word, meaning);
@@ -147,13 +147,13 @@ public class DictionaryServer {
                     break;
                 case "update meaning":
 
-                    wordJson = (JSONObject) req.get("word");
+                    wordJson = req.get("word");
                     word = wordJson.toString();
 
-                    meaningJson = (JSONObject) req.get("meaning");
+                    meaningJson = req.get("meaning");
                     meaning = meaningJson.toString();
 
-                    JSONObject prevMeaningJson = (JSONObject) req.get("previous meaning");
+                    Object prevMeaningJson = req.get("previous meaning");
                     String prevMeaning = prevMeaningJson.toString();
 
                     meanings = dictionary.updateDescription(meaning, prevMeaning, word);
@@ -164,7 +164,7 @@ public class DictionaryServer {
                     break;
                 case "remove word":
 
-                    wordJson = (JSONObject) req.get("word");
+                    wordJson = req.get("word");
                     word = wordJson.toString();
 
                     dictionary.removeWord(word);
@@ -175,10 +175,10 @@ public class DictionaryServer {
                     break;
                 case "add word":
 
-                    wordJson = (JSONObject) req.get("word");
+                    wordJson = req.get("word");
                     word = wordJson.toString();
 
-                    meaningJson = (JSONObject) req.get("meaning");
+                    meaningJson = req.get("meaning");
                     meaning = meaningJson.toString();
 
                     dictionary.addWord(word, meaning);
