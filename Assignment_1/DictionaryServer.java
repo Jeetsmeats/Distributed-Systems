@@ -93,15 +93,19 @@ public class DictionaryServer {
      * Server response to client request.
      * @param req client request.
      * @param outputStream output data stream from socket.
+     * @throws IOException error with output stream.
      */
     private synchronized static void response(JSONObject req, BufferedWriter outputStream) throws IOException {
 
         // JSON packet for sending through TCP buffer
         JSONObject packet = new JSONObject();
         try {
+
+            // get requested method
             Object methodJson = req.get("method");
             String method = methodJson.toString();
 
+            // declare variables
             Object wordJson;
             Object meaningJson;
             JSONArray meaningsArray;
@@ -112,15 +116,16 @@ public class DictionaryServer {
             ArrayList<String> meanings;
             ArrayList<String> words;
 
+            // select appropriate response
             switch (method) {
 
-                case "get dictionary":
+                case "get dictionary":      /* Get dictionary items - get words */
 
                     words = dictionary.getWords();
                     wordArray = addList2JSONArray(words);
                     packet.put("word", wordArray);
                     break;
-                case "get meaning":
+                case "get meaning":         /* Get word meaning */
 
                     wordJson = req.get("word");
                     word = wordJson.toString();
@@ -128,10 +133,11 @@ public class DictionaryServer {
                     meanings = dictionary.getMeaning(word);
                     meaningsArray = addList2JSONArray(meanings);
 
+                    // designate packet
                     packet.put("meaning", meaningsArray);
                     packet.put("word", word);
                     break;
-                case "add meaning":
+                case "add meaning":         /* Add word meaning */
 
                     wordJson = req.get("word");
                     word = wordJson.toString();
@@ -142,10 +148,11 @@ public class DictionaryServer {
                     meanings = dictionary.addDescription(word, meaning);
                     meaningsArray = addList2JSONArray(meanings);
 
+                    // designate packet
                     packet.put("meaning", meaningsArray);
                     packet.put("word", word);
 
-                    try {
+                    try {           /* save data */
 
                         Dictionary.saveData(dictionary);
                     } catch (InterruptedException e) {
@@ -153,7 +160,7 @@ public class DictionaryServer {
                         e.printStackTrace();
                     }
                     break;
-                case "update meaning":
+                case "update meaning":      /* Update word meaning */
 
                     wordJson = req.get("word");
                     word = wordJson.toString();
@@ -167,10 +174,11 @@ public class DictionaryServer {
                     meanings = dictionary.updateDescription(meaning, prevMeaning, word);
                     meaningsArray = addList2JSONArray(meanings);
 
+                    // designate packet
                     packet.put("meaning", meaningsArray);
                     packet.put("word", word);
 
-                    try {
+                    try {           /* save data */
 
                         Dictionary.saveData(dictionary);
                     } catch (InterruptedException e) {
@@ -178,18 +186,19 @@ public class DictionaryServer {
                         e.printStackTrace();
                     }
                     break;
-                case "remove word":
+                case "remove word":             /* Remove word from dictionary */
 
                     wordJson = req.get("word");
                     word = wordJson.toString();
 
                     dictionary.removeWord(word);
 
+                    // designate packet
                     words = dictionary.getWords();
                     wordArray = addList2JSONArray(words);
                     packet.put("word", wordArray);
 
-                    try {
+                    try {           /* save data */
 
                         Dictionary.saveData(dictionary);
                     } catch (InterruptedException e) {
@@ -197,7 +206,7 @@ public class DictionaryServer {
                         e.printStackTrace();
                     }
                     break;
-                case "add word":
+                case "add word":            /* Add word to dictionary */
 
                     wordJson = req.get("word");
                     word = wordJson.toString();
@@ -207,11 +216,12 @@ public class DictionaryServer {
 
                     dictionary.addWord(word, meaning);
 
+                    // designate packet
                     words = dictionary.getWords();
                     wordArray = addList2JSONArray(words);
                     packet.put("word", wordArray);
 
-                    try {
+                    try {               /* save data */
 
                         Dictionary.saveData(dictionary);
                     } catch (InterruptedException e) {
@@ -230,12 +240,12 @@ public class DictionaryServer {
 
         } catch (WordNullException | InvalidDescription |
                  InvalidWordException | DescriptionNullException |
-                DictionaryActionException e) {
+                DictionaryActionException e) {                  /* Server exceptions handling */
 
             // add error to json
             packet.put("error", e.getMessage());
 
-            // send data to client
+            // send error to client
             outputStream.write(packet.toString());
             outputStream.newLine();
             outputStream.flush();                     // Flush buffered writer contents.

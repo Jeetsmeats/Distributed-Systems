@@ -393,7 +393,8 @@ public class DictionaryClient extends JFrame {
         // package message into json based message protocol
         JSONObject packet = new JSONObject();
         ActionType action = serverAction.getActionType();
-        switch (action) {
+
+        switch (action) {               /* Prepare packet for TCP transmission */
 
             case GET_DICTIONARY:
                 packet.put("method", "get dictionary");
@@ -425,6 +426,8 @@ public class DictionaryClient extends JFrame {
             default:
                 break;
         }
+
+        // send packet over TCP
         out.write(packet.toString());
         out.newLine();
         out.flush();                     // Flush buffered writer contents.
@@ -432,7 +435,6 @@ public class DictionaryClient extends JFrame {
         // await server response
         boolean successRes = false;
         String res = null;
-
         while(!successRes) {
 
             if (in.ready()) {           /* Response received */
@@ -447,17 +449,16 @@ public class DictionaryClient extends JFrame {
         out.close();
 
         JSONObject response = new JSONObject(res);
-        // check for errors
-        try {
+
+        try {               /* Check errors */
 
             Object err = response.get("error");
             consoleLog.append(err.toString() + "\n");
-        } catch (JSONException e) {
+        } catch (JSONException e) {                 /* No error sent from server */
 
             System.out.println("No error");
 
-            // package message into json based message protocol
-            switch (action) {
+            switch (action) {                   /* Deconstruct response to GUI changes */
 
                 case GET_DICTIONARY:
 
@@ -542,9 +543,10 @@ public class DictionaryClient extends JFrame {
     }
 
     /**
-     *
-     * @param array
-     * @return
+     * Convert JSONArray object to a string array.
+     * @param array deconstructed input JSONArray
+     * @return string array including deconstructed JSON array items
+     * @throws IllegalArgumentException JSONArray was not received
      */
     private String[] object2String(Object array) throws IllegalArgumentException {
 
