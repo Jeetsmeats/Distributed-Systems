@@ -4,6 +4,7 @@ import javax.swing.*;
 
 /**
  * Action being sent from client.
+ * Author: Gunjeet Singh - 1170248
  */
 public class Actions {
 

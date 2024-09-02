@@ -19,6 +19,10 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 
+/**
+ * Dictionary Project GUI
+ * Author: Gunjeet Singh - 1170248
+ */
 public class DictionaryClient extends JFrame {
 
     /* UI Elements */
@@ -147,7 +151,7 @@ public class DictionaryClient extends JFrame {
     private static final String currentWordLabelText = "Current Word:";
     public DictionaryClient(String[] args) {
 
-        try {
+        try {           /* On Start up - connect to server */
 
             // server parameters
             port = Integer.parseInt(args[1]);
@@ -159,10 +163,10 @@ public class DictionaryClient extends JFrame {
 
             // initial request
             request(startAction);
-        } catch (UnknownHostException e) {
+        } catch (UnknownHostException e) {                  /* Host not found exception */
 
             consoleLog.append(e.getMessage() + " is an unknown host.  Try again!\n");
-        } catch (IOException | NumberFormatException e) {
+        } catch (IOException | NumberFormatException e) {               /* Connection failed / Invalid number format exception */
 
             consoleLog.append(e.getMessage() + "\n");
         } finally {
@@ -179,25 +183,28 @@ public class DictionaryClient extends JFrame {
             }
         }
 
+        /**
+         * Connect button action listener
+         */
         connectButton.addActionListener(e -> {
 
-            try {
+            try {               /* Connect to server */
                 address = serverAddressTextField.getText();
                 port = Integer.parseInt(serverPortTextField.getText());
 
                 serverAddressTextField.setText(enterAddressLabelText);
                 serverPortTextField.setText(enterPortLabelText);
 
+                // new socket connection
                 socket = new Socket(address, port);
                 addressLabel.setText(addressLabelText + " " + address);
                 portLabel.setText(portLabelText + " " + port);
-                System.out.println("Reached this point");
-            } catch (UnknownHostException err) {
+            } catch (UnknownHostException err) {            /* Host not found exception */
 
                 consoleLog.append(err.getMessage() + " is an unknown host.  Try again!\n");
                 addressLabel.setText(addressLabelText);
                 portLabel.setText(portLabelText);
-            } catch (IOException | NumberFormatException err) {
+            } catch (IOException | NumberFormatException err) {         /* Connection failed / Invalid number format exception */
 
                 consoleLog.append(err.getMessage() + "\n");
                 addressLabel.setText(addressLabelText);
@@ -217,19 +224,25 @@ public class DictionaryClient extends JFrame {
             }
         });
 
+        /**
+         * Get dictionary event listener
+         */
         getDictionary.addActionListener(e -> {
 
             Actions act = new Actions();
             requestAction(act);
         });
 
+        /**
+         * Search word button event listener.
+         */
         searchWordButton.addActionListener(e -> {
 
             String word = searchWordTextField.getText();
-            if (word.equals(searchWordLabelText) || word.isEmpty()) {
+            if (word.equals(searchWordLabelText) || word.isEmpty()) {       /* Search word not entered */
 
                 consoleLog.append("Enter a word to search meanings!");
-            } else {
+            } else {                    /* Send request */
 
                 searchWordTextField.setText(searchWordLabelText);
                 Actions act = new Actions(word, ActionType.GET_MEANING);
@@ -237,18 +250,21 @@ public class DictionaryClient extends JFrame {
             }
         });
 
+        /**
+         * Add word button event listener.
+         */
         addBtn.addActionListener(e -> {
 
             String word = addWordTextField.getText();
             addWordTextField.setText(addWordLabelText);
 
-            if (word.equals(addWordLabelText) || word.isEmpty()) {
+            if (word.equals(addWordLabelText) || word.isEmpty()) {          /* Added word not entered */
 
                 consoleLog.append("Enter a new word!\n");
-            } else if (includeMeaningTextField.getText().equals(includeMeaningLabelText)) {
+            } else if (includeMeaningTextField.getText().equals(includeMeaningLabelText)) {         /* Corresponding meaning not entered */
 
                 consoleLog.append("Must add meaning to the new word!\n");
-            } else {
+            } else {                    /* Send request */
 
                 String meaning = includeMeaningTextField.getText();
                 includeMeaningTextField.setText(includeMeaningLabelText);
@@ -257,13 +273,16 @@ public class DictionaryClient extends JFrame {
             }
         });
 
+        /**
+         * Remove word button event listener.
+         */
         removeBtn.addActionListener(e -> {
 
             String word = removeWordTextField.getText();
-            if (word.equals(removeWordLabelText) || word.isEmpty()) {
+            if (word.equals(removeWordLabelText) || word.isEmpty()) {           /* Word to remove not entered */
 
                 consoleLog.append("Enter a word to remove!\n");
-            } else {
+            } else {                    /* Send request */
 
                 removeWordTextField.setText(removeWordLabelText);
                 Actions act = new Actions(word, ActionType.REMOVE_WORD);
@@ -271,17 +290,20 @@ public class DictionaryClient extends JFrame {
             }
         });
 
+        /**
+         * Add meaning event button listener.
+         */
         addMeaningButton.addActionListener(e -> {
 
             String word = currentWord;
             String meaning = addMeaningTextField.getText();
-            if (meaning.equals(addMeaningLabelText) || meaning.isEmpty()) {
+            if (meaning.equals(addMeaningLabelText) || meaning.isEmpty()) {         /* Additional meaning not entered*/
 
                 consoleLog.append("Must add meaning to the current word!\n");
-            } else if (word == null) {
+            } else if (word == null) {                                              /* Corresponding word not found*/
 
                 consoleLog.append("Select a new word to add meaning to it!\n");
-            } else {
+            } else {                /* Send request */
 
                 addMeaningTextField.setText(addMeaningLabelText);
                 Actions act = new Actions(word, meaning, ActionType.ADD_MEANING);
@@ -290,22 +312,25 @@ public class DictionaryClient extends JFrame {
             addMeaningTextField.setText(addMeaningLabelText);
         });
 
+        /**
+         * Update meaning button event listener.
+         */
         updateBtn.addActionListener(e -> {
 
             String word = currentWord;
             String prevMeaning = meaningToUpdateTextField.getText();
             String meaning =  updatedMeaningTextField.getText();
 
-            if (meaning.equals(updatedMeaningLabelText) || meaning.isEmpty()) {
+            if (meaning.equals(updatedMeaningLabelText) || meaning.isEmpty()) {         /* Updated meaning not entered */
 
                 consoleLog.append("Enter a new meaning!\n");
-            } else if (prevMeaning.equals(meaningToUpdateLabelText) || prevMeaning.isEmpty()) {
+            } else if (prevMeaning.equals(meaningToUpdateLabelText) || prevMeaning.isEmpty()) {         /* Meaning  to update not entered */
 
                 consoleLog.append("Enter a meaning to update!\n");
-            } else if (word == null) {
+            } else if (word == null) {                  /* Corresponding word not found */
 
                 consoleLog.append("Select a new word to update a meaning!\n");
-            } else {
+            } else {                    /* Send request */
 
                 updatedMeaningTextField.setText(updatedMeaningLabelText);
                 meaningToUpdateTextField.setText(meaningToUpdateLabelText);
@@ -340,18 +365,22 @@ public class DictionaryClient extends JFrame {
         new DictionaryClient(args);
     }
 
+    /**
+     * Request action to send a request to the server.
+     * @param action Request action to send server
+     */
     public void requestAction(Actions action) {
 
         try {
 
             request(action);
             System.out.println("Something is happening");
-        } catch (UnknownHostException e) {
+        } catch (UnknownHostException e) {          /* Host not found in socket connection */
 
             consoleLog.append(e.getMessage() + " is an unknown host.  Try again!\n");
             addressLabel.setText(addressLabelText);
             portLabel.setText(portLabelText);
-        } catch (IOException | NumberFormatException e) {
+        } catch (IOException | NumberFormatException e) {           /* Connection failed / Invalid number format exception */
 
             consoleLog.append(e.getMessage() +  "\n");
             addressLabel.setText(addressLabelText);

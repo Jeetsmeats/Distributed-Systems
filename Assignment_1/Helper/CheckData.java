@@ -5,6 +5,7 @@ import java.util.regex.*;
 
 /**
  * Helper Function object.
+ * Author: Gunjeet Singh - 1170248
  */
 public class CheckData {
 

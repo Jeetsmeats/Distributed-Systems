@@ -8,6 +8,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * ThreadPool implementation
  * Based on medium article by Vipul Pachauri
  * https://vipulpachauri12.medium.com/design-custom-thread-pool-java-617263ee57ec
+ * Author: Gunjeet Singh - 1170248
  */
 public class ThreadPool {
 

@@ -2,6 +2,10 @@ package ThreadPool;
 
 import java.util.concurrent.BlockingQueue;
 
+/**
+ * Runnable program executor.
+ * Author: Gunjeet Singh - 1170248
+ */
 public class Executor implements Runnable {
 
     /**
